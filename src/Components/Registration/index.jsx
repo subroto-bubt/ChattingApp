@@ -1,9 +1,15 @@
 import { useFormik } from "formik";
-import React from "react";
+import React, { useState } from "react";
 import { signUp } from "../../validation/Validation";
-import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
+import {
+  getAuth,
+  createUserWithEmailAndPassword,
+  sendEmailVerification,
+} from "firebase/auth";
+import { BeatLoader } from "react-spinners";
 
 const RegFormCom = ({ toast }) => {
+  const [loading, setLoading] = useState(false);
   const auth = getAuth();
   const initialValues = {
     fullName: "",
@@ -19,21 +25,45 @@ const RegFormCom = ({ toast }) => {
   });
 
   const createNewUser = () => {
+    setLoading(true);
     createUserWithEmailAndPassword(
       auth,
       formik.values.email,
       formik.values.password
     )
       .then((userCredential) => {
-        // Signed up
-        const user = userCredential.user;
-        // ...
+        sendEmailVerification(auth.currentUser)
+          .then(() => {
+            toast.success("🦄Email send for verification", {
+              position: "top-right",
+              autoClose: 1000,
+              hideProgressBar: false,
+              closeOnClick: true,
+              pauseOnHover: true,
+              draggable: true,
+              progress: undefined,
+              theme: "light",
+            });
+            setLoading(false);
+          })
+          .catch((error) => {
+            toast.error(error.message, {
+              position: "top-right",
+              autoClose: 1000,
+              hideProgressBar: false,
+              closeOnClick: true,
+              pauseOnHover: true,
+              draggable: true,
+              progress: undefined,
+              theme: "light",
+            });
+          });
       })
       .catch((error) => {
         if (error.message.includes("auth/email-already-in-use")) {
-          toast.error("🦄 Email is already use", {
+          toast.error("🦄Email is already used", {
             position: "top-right",
-            autoClose: 5000,
+            autoClose: 1000,
             hideProgressBar: false,
             closeOnClick: true,
             pauseOnHover: true,
@@ -41,6 +71,7 @@ const RegFormCom = ({ toast }) => {
             progress: undefined,
             theme: "light",
           });
+          setLoading(false);
         }
         // const errorCode = error.code;
         // const errorMessage = error.message;
@@ -95,8 +126,12 @@ const RegFormCom = ({ toast }) => {
               &#9757; {formik.errors.password}
             </p>
           )}
-          <button className="bg-slate-900 text-white font-fontBold text-base rounded-md w-full py-2">
-            Sign Up
+          <button
+            type="submit"
+            disabled={loading}
+            className="bg-slate-900 text-white font-fontBold text-base rounded-md w-full py-2"
+          >
+            {loading ? <BeatLoader color="white" size={5} /> : "Sign Up"}
           </button>
         </form>
         <p className="font-fontRegular text-base text-gray-400 mt-5">
