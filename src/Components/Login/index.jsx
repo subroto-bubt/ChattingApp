@@ -3,10 +3,15 @@ import { useFormik } from "formik";
 import React, { useState } from "react";
 import { SignIn } from "../../validation/Validation";
 import { BeatLoader } from "react-spinners";
+import { useDispatch } from "react-redux";
+import { loggedInUser } from "../../features/Slices/LoginSlice";
+import { Link, useNavigate } from "react-router-dom";
 
 const LoginFormCom = ({ toast }) => {
   const [loading, setLoading] = useState(false);
   const auth = getAuth();
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
   const initialValues = {
     fullName: "",
     email: "",
@@ -28,9 +33,11 @@ const LoginFormCom = ({ toast }) => {
       formik.values.password
     )
       .then(({ user }) => {
-        console.log(user);
         if (user.emailVerified == true) {
-          console.log("true");
+          setLoading(false);
+          dispatch(loggedInUser(user));
+          localStorage.setItem("user", JSON.stringify(user));
+          navigate("/");
         } else {
           toast.error("Please varify your email", {
             position: "top-right",
@@ -46,8 +53,19 @@ const LoginFormCom = ({ toast }) => {
         setLoading(false);
       })
       .catch((error) => {
-        console.log(error);
-        setLoading(false);
+        if (error.message.includes("auth/invalid-credential")) {
+          toast.error("🦄Email or password incorrect", {
+            position: "top-right",
+            autoClose: 1000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "light",
+          });
+          setLoading(false);
+        }
       });
   };
   return (
@@ -90,7 +108,10 @@ const LoginFormCom = ({ toast }) => {
           </button>
         </form>
         <p className="font-fontRegular text-base text-gray-400 mt-5">
-          Don't have an account? Sign Up
+          Don't have an account?{" "}
+          <Link to="/ragistration" className="text-blue-500 hover:underline">
+            Sign Up
+          </Link>
         </p>
       </div>
     </>

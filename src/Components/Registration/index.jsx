@@ -7,10 +7,12 @@ import {
   sendEmailVerification,
 } from "firebase/auth";
 import { BeatLoader } from "react-spinners";
+import { Link, useNavigate } from "react-router-dom";
 
 const RegFormCom = ({ toast }) => {
   const [loading, setLoading] = useState(false);
   const auth = getAuth();
+  const navigate = useNavigate();
   const initialValues = {
     fullName: "",
     email: "",
@@ -44,6 +46,9 @@ const RegFormCom = ({ toast }) => {
               progress: undefined,
               theme: "light",
             });
+            setTimeout(() => {
+              navigate("/login");
+            }, 2000);
             setLoading(false);
           })
           .catch((error) => {
@@ -135,7 +140,10 @@ const RegFormCom = ({ toast }) => {
           </button>
         </form>
         <p className="font-fontRegular text-base text-gray-400 mt-5">
-          Already have an account? Sign In
+          Already have an account?{" "}
+          <Link to="/login" className="text-blue-500 hover:underline">
+            Sign In
+          </Link>
         </p>
       </div>
     </>
