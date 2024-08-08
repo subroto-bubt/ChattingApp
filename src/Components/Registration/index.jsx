@@ -46,9 +46,10 @@ const RegFormCom = ({ toast }) => {
               progress: undefined,
               theme: "light",
             });
-            setTimeout(() => {
+            const timeoutId = setTimeout(() => {
               navigate("/login");
             }, 2000);
+            return () => clearTimeout(timeoutId);
             setLoading(false);
           })
           .catch((error) => {
