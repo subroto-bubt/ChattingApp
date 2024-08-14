@@ -8,5 +8,5 @@ export default {
       fontBold: ["roboto-bold"],
     },
   },
-  plugins: [],
+  plugins: ["prettier-plugin-tailwindcss"],
 };
