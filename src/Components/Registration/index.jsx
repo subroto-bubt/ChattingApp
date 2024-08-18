@@ -5,14 +5,17 @@ import {
   getAuth,
   createUserWithEmailAndPassword,
   sendEmailVerification,
+  updateProfile,
 } from "firebase/auth";
 import { BeatLoader } from "react-spinners";
 import { Link, useNavigate } from "react-router-dom";
+import { getDatabase, ref, set } from "firebase/database";
 
 const RegFormCom = ({ toast }) => {
   const [loading, setLoading] = useState(false);
   const auth = getAuth();
   const navigate = useNavigate();
+  const db = getDatabase();
   const initialValues = {
     fullName: "",
     email: "",
@@ -33,37 +36,47 @@ const RegFormCom = ({ toast }) => {
       formik.values.email,
       formik.values.password
     )
-      .then((userCredential) => {
-        sendEmailVerification(auth.currentUser)
-          .then(() => {
-            toast.success("🦄Email send for verification", {
-              position: "top-right",
-              autoClose: 1000,
-              hideProgressBar: false,
-              closeOnClick: true,
-              pauseOnHover: true,
-              draggable: true,
-              progress: undefined,
-              theme: "light",
+      .then(({ user }) => {
+        updateProfile(auth.currentUser, {
+          displayName: formik.values.fullName,
+        }).then(() => {
+          sendEmailVerification(auth.currentUser)
+            .then(() => {
+              toast.success("🦄Email send for verification", {
+                position: "top-right",
+                autoClose: 1000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                theme: "light",
+              });
+              const timeoutId = setTimeout(() => {
+                navigate("/login");
+              }, 2000);
+              return () => clearTimeout(timeoutId);
+              setLoading(false);
+            })
+            .then(() => {
+              set(ref(db, "users/" + user.uid), {
+                username: user.displayName,
+                email: user.email,
+              });
+            })
+            .catch((error) => {
+              toast.error(error.message, {
+                position: "top-right",
+                autoClose: 1000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                theme: "light",
+              });
             });
-            const timeoutId = setTimeout(() => {
-              navigate("/login");
-            }, 2000);
-            return () => clearTimeout(timeoutId);
-            setLoading(false);
-          })
-          .catch((error) => {
-            toast.error(error.message, {
-              position: "top-right",
-              autoClose: 1000,
-              hideProgressBar: false,
-              closeOnClick: true,
-              pauseOnHover: true,
-              draggable: true,
-              progress: undefined,
-              theme: "light",
-            });
-          });
+        });
       })
       .catch((error) => {
         if (error.message.includes("auth/email-already-in-use")) {

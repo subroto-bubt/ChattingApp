@@ -1,14 +1,19 @@
-import React from "react";
+import React, { useState } from "react";
 
 import { MessageIcon } from "../../svg/Message";
 import { FriendsIcon } from "../../svg/Friends";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { getAuth, signOut } from "firebase/auth";
 import { logOutUser } from "../../features/Slices/LoginSlice";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { CameraIcon } from "../../svg/Camera";
+import { createPortal } from "react-dom";
+import Mordals from "../Modals";
+import AvatarImage from "../../assets/avatar.jpg";
 
 const Navbar = () => {
+  const user = useSelector((user) => user.login.loggedIn);
+  const [show, setShow] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -24,20 +29,27 @@ const Navbar = () => {
         console.log(error);
       });
   };
-
   return (
     <>
       <div className="flex items-center justify-between py-3 bg-slate-900 px-7">
         <div className="flex items-center gap-x-2">
           <div className="relative">
-            <div className="w-16 h-16 rounded-full bg-orange-200 overflow-hidden"></div>
-            <div className="absolute bottom-0 right-0 w-5 h-5 bg-white rounded-full flex items-center justify-center">
+            <div className="w-16 h-16 rounded-full overflow-hidden">
+              <img
+                src={user.photoURL || AvatarImage}
+                className="w-full h-full object-cover"
+              />
+            </div>
+            <div
+              className="absolute bottom-0 right-0 w-5 h-5 bg-white rounded-full flex items-center justify-center"
+              onClick={() => setShow(true)}
+            >
               <CameraIcon />
             </div>
           </div>
           <div>
             <span className="font-fontRegular text-white">
-              Subroto Kumar Sarker
+              {user.displayName}
             </span>
           </div>
         </div>
@@ -72,6 +84,7 @@ const Navbar = () => {
           </button>
         </div>
       </div>
+      {show && createPortal(<Mordals setShow={setShow} />, document.body)}
     </>
   );
 };
