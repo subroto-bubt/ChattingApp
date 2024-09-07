@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-
 import { MessageIcon } from "../../svg/Message";
 import { FriendsIcon } from "../../svg/Friends";
 import { Link, useLocation, useNavigate } from "react-router-dom";
@@ -10,6 +9,7 @@ import { CameraIcon } from "../../svg/Camera";
 import { createPortal } from "react-dom";
 import Mordals from "../Modals";
 import AvatarImage from "../../assets/avatar.jpg";
+import { DeactiveSlingle } from "../../features/Slices/ActiveSingleSlice";
 
 const Navbar = () => {
   const user = useSelector((user) => user.login.loggedIn);
@@ -28,6 +28,10 @@ const Navbar = () => {
       .catch((error) => {
         console.log(error);
       });
+  };
+  const handleDeactive = () => {
+    localStorage.removeItem("active");
+    dispatch(DeactiveSlingle());
   };
   return (
     <>
@@ -55,6 +59,7 @@ const Navbar = () => {
         </div>
         <div className="flex items-center gap-x-4">
           <Link
+            onClick={handleDeactive}
             to="/"
             className={`${
               location.pathname == "/"
